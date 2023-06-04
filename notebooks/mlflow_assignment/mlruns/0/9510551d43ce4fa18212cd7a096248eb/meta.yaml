@@ -1,0 +1,15 @@
+artifact_uri: file:///home/azureuser/MLOps_zoomcamp/notebooks/mlflow_assignment/mlruns/0/9510551d43ce4fa18212cd7a096248eb/artifacts
+end_time: 1685891941037
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 9510551d43ce4fa18212cd7a096248eb
+run_name: classy-sloth-573
+run_uuid: 9510551d43ce4fa18212cd7a096248eb
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1685891929729
+status: 3
+tags: []
+user_id: azureuser
