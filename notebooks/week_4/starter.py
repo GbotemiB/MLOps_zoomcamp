@@ -9,8 +9,8 @@ import numpy as np
 
 from sklearn.metrics import mean_squared_error
 
-year = 2022 #int(sys.argv[1]) #year
-month = 3 #int(sys.argv[2]) #month
+year = int(sys.argv[1]) #year
+month = int(sys.argv[2]) #month
 
 
 with open('model.bin', 'rb') as f_in:
@@ -37,7 +37,7 @@ def calculate_average(values):
     return average
 
 
-df = read_data(f'https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2022-03.parquet')
+df = read_data(f'https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_{year:04d}-{month:02d}.parquet')
 
 
 dicts = df[categorical].to_dict(orient='records')

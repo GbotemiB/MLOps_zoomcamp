@@ -1,0 +1,25 @@
+artifact_path: model
+flavors:
+  lightgbm:
+    code: null
+    data: model.pkl
+    lgb_version: 4.0.0
+    model_class: lightgbm.sklearn.LGBMRegressor
+  python_function:
+    data: model.pkl
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.lightgbm
+    python_version: 3.10.9
+mlflow_version: 2.5.0
+model_uuid: 22543fa77641477d970c4a8fcad89121
+run_id: 362443fe0a004c128c05f76f6d5d3b87
+signature:
+  inputs: '[{"type": "long", "name": "ID"}, {"type": "double", "name": "loc"}, {"type":
+    "double", "name": "title"}, {"type": "double", "name": "bedroom"}, {"type": "double",
+    "name": "bathroom"}, {"type": "double", "name": "parking_space"}, {"type": "integer",
+    "name": "zone"}, {"type": "double", "name": "rooms"}, {"type": "double", "name":
+    "bathroom_ratio"}]'
+  outputs: '[{"type": "tensor", "tensor-spec": {"dtype": "float64", "shape": [-1]}}]'
+utc_time_created: '2023-08-12 13:58:25.322507'
