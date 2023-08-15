@@ -15,16 +15,16 @@ def prepare(param):
 
 
 house_type_ranks = {
-    'Cottage': 1,
-    'Bungalow': 2,
-    'Townhouse': 3,
-    'Terrace duplex': 4,
-    'Detached duplex': 5,
-    'Semi-detached duplex': 6,
-    'Flat': 7,
-    'Penthouse': 8,
-    'Apartment': 9,
-    'Mansion': 10
+    'Cottage': 1.0,
+    'Bungalow': 2.0,
+    'Townhouse': 3.0,
+    'Terrace duplex': 4.0,
+    'Detached duplex': 5.0,
+    'Semi-detached duplex': 6.0,
+    'Flat': 7.0,
+    'Penthouse': 8.0,
+    'Apartment': 9.0,
+    'Mansion': 10.0,
 }
 
 state_to_zone = {
