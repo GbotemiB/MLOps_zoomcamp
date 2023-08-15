@@ -4,16 +4,14 @@ import numpy as np
 from sklearn.model_selection import train_test_split, KFold
 from lightgbm import LGBMRegressor
 from catboost import CatBoostRegressor
-from xgboost import XGBRegressor
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from sklearn.feature_extraction import DictVectorizer
-import optuna
 
 import pickle
 import mlflow
 from mlflow.tracking import MlflowClient
 from mlflow.entities import ViewType
-
+from prepare_features import prepare
 
 MLFLOW_TRACKING_URI = "sqlite:///mlflow.db"
 EXPERIMENT_NAME = 'housing-price'
@@ -21,108 +19,14 @@ EXPERIMENT_NAME = 'housing-price'
 mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
 mlflow.set_experiment(EXPERIMENT_NAME)
 
-client = MlflowClient(tracking_uri=MLFLOW_TRACKING_URI)
-
-experiment = client.get_experiment_by_name(EXPERIMENT_NAME)
-runs = client.search_runs(
-    experiment_ids=experiment.experiment_id,
-    run_view_type=ViewType.ACTIVE_ONLY,
-    max_results=5,
-    order_by=["metrics.rmse ASC"]
-)
-
-for run in runs:
-    print(f'run_id:{run.info.run_id}, rmse:{run.data.metrics["rmse"]}')
-
-run_id = "332da12b29be4a7fb4a05ce3e9e9d5ff"
-model_uri = f"runs:/{run_id}/model"
-mlflow.register_model(model_uri=model_uri, name="housing_price")
-
-model_name = "housing_price"
-latest_version = client.get_latest_versions(name=model_name)
-
-
-latest_version[0].version
-
-client.transition_model_version_stage(
-    name=model_name,
-    version=latest_version[0].version,
-    stage="Staging",
-    archive_existing_versions=False
-)
-
 data_path = 'data/Housing_dataset_train.csv'
-
-state_to_zone = {
-    "Abia": "South-East",
-    "Adamawa": "North-East",
-    "Akwa Ibom": "South-South",
-    "Anambra": "South-East",
-    "Bauchi": "North-East",
-    "Bayelsa": "South-South",
-    "Benue": "North-Central",
-    "Borno": "North-East",
-    "Cross River": "South-South",
-    "Delta": "South-South",
-    "Ebonyi": "South-East",
-    "Edo": "South-South",
-    "Ekiti": "South-West",
-    "Enugu": "South-East",
-    "Gombe": "North-East",
-    "Imo": "South-East",
-    "Jigawa": "North-West",
-    "Kaduna": "North-West",
-    "Kano": "North-West",
-    "Katsina": "North-West",
-    "Kebbi": "North-West",
-    "Kogi": "North-Central",
-    "Kwara": "North-Central",
-    "Lagos": "South-West",
-    "Nasarawa": "North-Central",
-    "Niger": "North-Central",
-    "Ogun": "South-West",
-    "Ondo": "South-West",
-    "Osun": "South-West",
-    "Oyo": "South-West",
-    "Plateau": "North-Central",
-    "Rivers": "South-South",
-    "Sokoto": "North-West",
-    "Taraba": "North-East",
-    "Yobe": "North-East",
-    "Zamfara": "North-West",
-}
-
-
-house_type_ranks = {
-    'Cottage': 1,
-    'Bungalow': 2,
-    'Townhouse': 3,
-    'Terrace duplex': 4,
-    'Detached duplex': 5,
-    'Semi-detached duplex': 6,
-    'Flat': 7,
-    'Penthouse': 8,
-    'Apartment': 9,
-    'Mansion': 10
-}
 
 def preprocess(data_path):
     data = pd.read_csv(data_path)
 
     print(data.columns.tolist())
     
-    data['zone'] = data['loc'].map(state_to_zone)
-    data['title'] = data['title'].map(house_type_ranks)
-
-    category_frequencies = data['loc'].value_counts(normalize=True)
-    loc_frequency_mapping = category_frequencies.to_dict()
-    data['loc'] = data['loc'].map(loc_frequency_mapping)
-
-    data['rooms'] = data['bathroom'] + data['bedroom']
-    data['bathroom_ratio'] = data['bathroom']/(data['bathroom'] + data['bedroom'])
-
-    data['zone'] = data['zone'].astype('category').cat.codes
-
+    data = prepare(data)
     print("_____________________________________________________________________________")
     print(data.head())
 
@@ -131,11 +35,12 @@ def preprocess(data_path):
 
     return X, y
 
+def split_data(features, label):
+    X_train, X_test, y_train, y_test = train_test_split(features, label, test_size=0.2, random_state=42)
+    return X_train, X_test, y_train, y_test
 
-X_, y_ = preprocess(data_path)
+def train_model(X_train, X_test, y_train, y_test):
 
-
-mlflow.lightgbm.autolog(disable=True)
 
 with mlflow.start_run():
 
@@ -175,6 +80,9 @@ with mlflow.start_run():
 
     mlflow.log_artifact(local_path="models/lgb.bin", artifact_path="models_pickle")
     mlflow.lightgbm.log_model(model, artifact_path="models_mlflow")
+
+
+
 
 
 with mlflow.start_run():
