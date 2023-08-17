@@ -27,10 +27,13 @@ def split_data(features, label):
     print("data splitting completed")
     return X_train, X_test, y_train, y_test
 
-def save_test_data(X_test, y_test):
-    df = pd.merge(X_test, y_test, left_index=True, right_index=True, how='inner')
-    df.to_csv("./data/test_data.csv", index=False)
-    return "saved test data successfully"
+def save_train_and_test_data(X_train, X_test, y_train, y_test):
+    df_train = pd.merge(X_train, y_train, left_index=True, right_index=True, how='inner')
+    df_train.to_csv("./data/train_data.csv", index=False)
+    
+    df_test = pd.merge(X_test, y_test, left_index=True, right_index=True, how='inner')
+    df_test.to_csv("./data/test_data.csv", index=False)
+    return "saved train and test data successfully"
 
 def train_model(X_train, y_train, objective):
     print("model training starting............................")
@@ -153,13 +156,13 @@ if __name__=="__main__":
     X, y = preprocess(data_path)
     X_train, X_test, y_train, y_test = split_data(X, y)
 
-    study = optuna.create_study(direction='minimize')  # Create a new study.
-    study.optimize(objective, n_trials=n_trials)
+    save_train_and_test_data(X_train, X_test, y_train, y_test)
 
-    best_run, run_id = best_run_and_id(EXPERIMENT_NAME, n_trials)
-    register_model(run_id, model_registry_name)
+    # study = optuna.create_study(direction='minimize')  # Create a new study.
+    # study.optimize(objective, n_trials=n_trials)
 
-    latest_version = client.get_latest_versions(name=model_registry_name, stages=['None'])[0].version
-    transition_model(latest_version)
+    # best_run, run_id = best_run_and_id(EXPERIMENT_NAME, n_trials)
+    # register_model(run_id, model_registry_name)
 
-    
+    # latest_version = client.get_latest_versions(name=model_registry_name, stages=['None'])[0].version
+    # transition_model(latest_version)
