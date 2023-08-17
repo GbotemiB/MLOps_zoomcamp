@@ -27,6 +27,11 @@ def split_data(features, label):
     print("data splitting completed")
     return X_train, X_test, y_train, y_test
 
+def save_test_data(X_test, y_test):
+    df = pd.merge(X_test, y_test, left_index=True, right_index=True, how='inner')
+    df.to_csv("./data/test_data.csv", index=False)
+    return "saved test data successfully"
+
 def train_model(X_train, y_train, objective):
     print("model training starting............................")
     study = optuna.create_study(direction='minimize')  # Create a new study.
@@ -39,7 +44,7 @@ def objective(trial):
     with mlflow.start_run():
 
         max_depth = trial.suggest_int('rf_max_depth', 2, 16)
-        num_leaves = trial.suggest_int('num_leaves', 2, 30)
+        num_leaves = trial.suggest_int('num_leaves', 2, 20)
         n_estimators = trial.suggest_int('n_estimators', 100, 4000)
         learning_rate = trial.suggest_float('learning_rate', 1e-5, 1e-1, log=True)
         colsample_bytree = trial.suggest_float('colsample_bytree', 0, 1)
@@ -57,7 +62,7 @@ def objective(trial):
         mlflow.log_params(params)
 
         fold_pred = []
-        splits = 2
+        splits = 5
         fold = KFold(n_splits=splits)
 
         for data_index, test_index in fold.split(X_train, y_train):
@@ -81,6 +86,7 @@ def objective(trial):
             pickle.dump(model, f)
 
         mlflow.log_artifact(local_path="models/lgb.bin", artifact_path="models_pickle")
+        
         mlflow.lightgbm.log_model(model, artifact_path="models_mlflow")
 
     return RMSE
@@ -89,7 +95,7 @@ def objective(trial):
     # study.optimize(objective, n_trials=10)
 
 
-def best_run_and_id(EXPERIMENT_NAME):
+def best_run_and_id(EXPERIMENT_NAME, n_trials):
 
     experiment = client.get_experiment_by_name(EXPERIMENT_NAME)
 
@@ -99,7 +105,7 @@ def best_run_and_id(EXPERIMENT_NAME):
     runs = client.search_runs(
         experiment_ids=experiment.experiment_id,
         run_view_type=ViewType.ACTIVE_ONLY,
-        max_results=10,
+        max_results=n_trials,
         # order_by=["metrics.rmse"]
     )
 
@@ -142,13 +148,15 @@ if __name__=="__main__":
 
     data_path = 'data/Housing_dataset_train.csv'
 
+    n_trials = 5
+
     X, y = preprocess(data_path)
     X_train, X_test, y_train, y_test = split_data(X, y)
 
     study = optuna.create_study(direction='minimize')  # Create a new study.
-    study.optimize(objective, n_trials=1)
+    study.optimize(objective, n_trials=n_trials)
 
-    best_run, run_id = best_run_and_id(EXPERIMENT_NAME)
+    best_run, run_id = best_run_and_id(EXPERIMENT_NAME, n_trials)
     register_model(run_id, model_registry_name)
 
     latest_version = client.get_latest_versions(name=model_registry_name, stages=['None'])[0].version

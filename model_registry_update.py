@@ -55,3 +55,7 @@ if __name__=="__main__":
             stage="Production",
             archive_existing_versions=True,
         )
+
+        print("new model in production")
+    else:
+        print("old model is better than new model")
