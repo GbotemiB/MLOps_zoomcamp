@@ -1,8 +1,10 @@
 import mlflow
 from mlflow.tracking import MlflowClient
 from mlflow.entities import ViewType
+from prefect import task, flow
 
-def best_performing_model():
+@task()
+def best_performing_model(client, experiment):
 
     runs = client.search_runs(
         experiment_ids=experiment.experiment_id,
@@ -15,12 +17,13 @@ def best_performing_model():
     best_run_metric = runs.data.metrics["rmse"]
 
     for version in client.search_model_versions():
-        if version.run)id == best_run_id:
+        if version.run_id == best_run_id:
             best_version = version.version
 
     return best_run_id, best_run_metric, best_version
 
-def production_model():
+@task()
+def production_model(client, model_registry_name):
 
     if client.get_latest_versions == True:
         prod_model = client.get_latest_versions(model_registry_name, stages=["Production"])[0]
@@ -33,20 +36,11 @@ def production_model():
     
     return prod_model_run_id, prod_model_metric
 
-if __name__=="__main__":
+@flow()
+def runner(MLFLOW_TRACKING_URI, EXPERIMENT_NAME, model_registry_name, client, experiment):
 
-    MLFLOW_TRACKING_URI = "sqlite:///mlflow.db"
-    EXPERIMENT_NAME = 'housing-price'
-    model_registry_name = "housing_price"
-
-    mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
-    mlflow.set_experiment(EXPERIMENT_NAME)
-
-    client = MlflowClient()
-    experiment = client.get_experiment_by_name(EXPERIMENT_NAME)
-
-    best_run_id, best_run_metric, best_version = best_performing_model()
-    prod_model_run_id, prod_model_metric = production_model()
+    best_run_id, best_run_metric, best_version = best_performing_model(client, experiment)
+    prod_model_run_id, prod_model_metric = production_model(client, model_registry_name)
 
     if best_run_metric > prod_model_metric:
         client.transition_model_version_stage(
@@ -59,3 +53,17 @@ if __name__=="__main__":
         print("new model in production")
     else:
         print("old model is better than new model")
+
+if __name__=="__main__":
+
+    MLFLOW_TRACKING_URI = "sqlite:///mlflow.db"
+    EXPERIMENT_NAME = 'housing-price'
+    model_registry_name = "housing_price"
+
+    mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
+    mlflow.set_experiment(EXPERIMENT_NAME)
+
+    client = MlflowClient()
+    experiment = client.get_experiment_by_name(EXPERIMENT_NAME)
+    runner(MLFLOW_TRACKING_URI, EXPERIMENT_NAME, model_registry_name, client, experiment)
+    
