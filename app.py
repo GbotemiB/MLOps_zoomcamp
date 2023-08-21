@@ -1,10 +1,8 @@
-import os
 import mlflow
-from mlflow import MlflowClient
-import pickle
 import pandas as pd
-
 from flask import Flask, jsonify, request
+from mlflow import MlflowClient
+
 from prepare_features import prepare
 
 MLFLOW_TRACKING_URI = "sqlite:///mlflow.db"
@@ -21,15 +19,13 @@ prod_model_run_id = prod_model.run_id
 logged_model = f'runs:/{prod_model_run_id}/model'
 loaded_model = mlflow.pyfunc.load_model(logged_model)
 
-# with open('models/cat.bin', 'rb') as f:
-#     model = pickle.load(f)  
-
-
 app = Flask('Housing Price Prediction')
+
 
 @app.route('/', methods=['GET'])
 def index():
     return "Hi, Welcome to Nigerian Housing Prediction Portal"
+
 
 @app.route('/predict', methods=['POST'])
 def predict_endpoint():
@@ -37,11 +33,11 @@ def predict_endpoint():
     data = pd.DataFrame([parameters])
     data = prepare(data)
     prediction = loaded_model.predict(data)
-    result = {
-        'price' : float(prediction[0])
-    }
+    result = {'price': float(prediction[0])}
 
     return jsonify(result)
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
+
     app.run(debug=True, host='0.0.0.0', port=9090)

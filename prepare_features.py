@@ -7,7 +7,7 @@ def prepare(param):
     param['loc'] = param['loc'].map(loc_frequency_mapping)
 
     param['rooms'] = param['bathroom'] + param['bedroom']
-    param['bathroom_ratio'] = param['bathroom']/(param['bathroom'] + param['bedroom'])
+    param['bathroom_ratio'] = param['bathroom'] / (param['bathroom'] + param['bedroom'])
 
     param['zone'] = param['zone'].astype('category').cat.codes
 

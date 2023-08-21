@@ -1,16 +1,17 @@
-import pathlib
 import pickle
-import pandas as pd
+import pathlib
+
 import numpy as np
 import scipy
-import sklearn
-from sklearn.feature_extraction import DictVectorizer
-from sklearn.metrics import mean_squared_error
 import mlflow
+import pandas as pd
+import sklearn
 import xgboost as xgb
 from prefect import flow, task
-from prefect.artifacts import create_markdown_artifact
 from prefect_email import EmailServerCredentials, email_send_message
+from sklearn.metrics import mean_squared_error
+from prefect.artifacts import create_markdown_artifact
+from sklearn.feature_extraction import DictVectorizer
 
 
 @task(retries=3, retry_delay_seconds=2, name="Read taxi data")
@@ -112,22 +113,21 @@ def train_best_model(
         create_markdown_artifact(
             key="markdown-artifact",
             markdown=f"{rmse} for validation data",
-            description="rmse report"
+            description="rmse report",
         )
     return
 
+
 @flow(log_prints=True)
-def send_email_message(
-    gmail : str = "<email placeholder>"
-    ) -> None:
+def send_email_message(gmail: str = "<email placeholder>") -> None:
     email_credentials_block = EmailServerCredentials.load("gmail-block")
     subject = email_send_message.with_options(name=f"email {gmail}").submit(
-        email_server_credentials = email_credentials_block,
-        subject = "Prefect test notification",
-        msg = f"flow completed successfully",
-        email_to = gmail
+        email_server_credentials=email_credentials_block,
+        subject="Prefect test notification",
+        msg=f"flow completed successfully",
+        email_to=gmail,
     )
-    print ("email successfully sent")
+    print("email successfully sent")
 
 
 @flow()
@@ -151,7 +151,7 @@ def main_flow(
     # Train
     train_best_model(X_train, X_val, y_train, y_val, dv)
 
-    #send email
+    # send email
     # send_email_message(gmail)
 
 
@@ -160,5 +160,6 @@ def parent_flow():
     main_flow()
     send_email_message()
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     parent_flow()

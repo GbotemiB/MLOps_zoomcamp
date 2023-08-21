@@ -1,10 +1,11 @@
-from prefect import task, flow
 import mlflow
+from prefect import flow
 from mlflow.tracking import MlflowClient
 
 from monitoring import main_task as monitoring
 from model_train import run as model_train
 from model_registry_update import runner as model_registry
+
 
 @flow(name="main_flow_run")
 def main_run():
@@ -19,12 +20,21 @@ def main_run():
     experiment = client.get_experiment_by_name(EXPERIMENT_NAME)
 
     data_path = 'data/Housing_dataset_train.csv'
-    n_trials = 2
+    n_trials = 100
 
-    model_train(MLFLOW_TRACKING_URI, EXPERIMENT_NAME, model_registry_name, client, data_path, n_trials)
-    model_registry(MLFLOW_TRACKING_URI, EXPERIMENT_NAME, model_registry_name, client, experiment)
+    model_train(
+        MLFLOW_TRACKING_URI,
+        EXPERIMENT_NAME,
+        model_registry_name,
+        client,
+        data_path,
+        n_trials,
+    )
+    model_registry(
+        MLFLOW_TRACKING_URI, EXPERIMENT_NAME, model_registry_name, client, experiment
+    )
     monitoring(MLFLOW_TRACKING_URI, EXPERIMENT_NAME, model_registry_name, client)
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
     main_run()

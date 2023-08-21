@@ -1,7 +1,8 @@
 import mlflow
-from mlflow.tracking import MlflowClient
+from prefect import flow, task
 from mlflow.entities import ViewType
-from prefect import task, flow
+from mlflow.tracking import MlflowClient
+
 
 @task()
 def best_performing_model(client, experiment):
@@ -10,7 +11,7 @@ def best_performing_model(client, experiment):
         experiment_ids=experiment.experiment_id,
         run_view_type=ViewType.ACTIVE_ONLY,
         max_results=1,
-        order_by=["metrics.rmse ASC"]
+        order_by=["metrics.rmse ASC"],
     )[0]
 
     best_run_id = runs.info.run_id
@@ -22,24 +23,34 @@ def best_performing_model(client, experiment):
 
     return best_run_id, best_run_metric, best_version
 
+
 @task()
 def production_model(client, model_registry_name):
 
     if client.get_latest_versions == True:
-        prod_model = client.get_latest_versions(model_registry_name, stages=["Production"])[0]
-        prod_model_run_id = prod_model.run_id   
+        prod_model = client.get_latest_versions(
+            model_registry_name, stages=["Production"]
+        )[0]
+        prod_model_run_id = prod_model.run_id
 
-        prod_model_metric = client.get_run(run_id=prod_model_run_id).data.metrics["rmse"]
+        prod_model_metric = client.get_run(run_id=prod_model_run_id).data.metrics[
+            "rmse"
+        ]
     else:
         prod_model_run_id = 0
         prod_model_metric = 0
-    
+
     return prod_model_run_id, prod_model_metric
 
-@flow()
-def runner(MLFLOW_TRACKING_URI, EXPERIMENT_NAME, model_registry_name, client, experiment):
 
-    best_run_id, best_run_metric, best_version = best_performing_model(client, experiment)
+@flow()
+def runner(
+    MLFLOW_TRACKING_URI, EXPERIMENT_NAME, model_registry_name, client, experiment
+):
+
+    best_run_id, best_run_metric, best_version = best_performing_model(
+        client, experiment
+    )
     prod_model_run_id, prod_model_metric = production_model(client, model_registry_name)
 
     if best_run_metric > prod_model_metric:
@@ -54,7 +65,8 @@ def runner(MLFLOW_TRACKING_URI, EXPERIMENT_NAME, model_registry_name, client, ex
     else:
         print("old model is better than new model")
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
 
     MLFLOW_TRACKING_URI = "sqlite:///mlflow.db"
     EXPERIMENT_NAME = 'housing-price'
@@ -65,5 +77,6 @@ if __name__=="__main__":
 
     client = MlflowClient()
     experiment = client.get_experiment_by_name(EXPERIMENT_NAME)
-    runner(MLFLOW_TRACKING_URI, EXPERIMENT_NAME, model_registry_name, client, experiment)
-    
+    runner(
+        MLFLOW_TRACKING_URI, EXPERIMENT_NAME, model_registry_name, client, experiment
+    )

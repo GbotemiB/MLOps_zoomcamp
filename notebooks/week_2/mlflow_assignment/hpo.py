@@ -1,12 +1,12 @@
 import os
 import pickle
+
 import click
 import mlflow
 import optuna
-
 from optuna.samplers import TPESampler
-from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error
+from sklearn.ensemble import RandomForestRegressor
 
 mlflow.set_tracking_uri("sqlite:///assignment.db")
 mlflow.set_experiment("random-forest-hyperopt")
@@ -22,16 +22,15 @@ def load_pickle(filename):
 @click.option(
     "--data_path",
     default="./output",
-    help="Location where the processed NYC taxi trip data was saved"
+    help="Location where the processed NYC taxi trip data was saved",
 )
 @click.option(
     "--num_trials",
     default=10,
-    help="The number of parameter evaluations for the optimizer to explore"
+    help="The number of parameter evaluations for the optimizer to explore",
 )
 def run_optimization(data_path: str, num_trials: int):
 
-    
     X_train, y_train = load_pickle(os.path.join(data_path, "train.pkl"))
     X_val, y_val = load_pickle(os.path.join(data_path, "val.pkl"))
 
@@ -43,10 +42,9 @@ def run_optimization(data_path: str, num_trials: int):
                 'min_samples_split': trial.suggest_int('min_samples_split', 2, 10, 1),
                 'min_samples_leaf': trial.suggest_int('min_samples_leaf', 1, 4, 1),
                 'random_state': 42,
-                'n_jobs': -1
+                'n_jobs': -1,
             }
 
-            
             rf = RandomForestRegressor(**params)
             rf.fit(X_train, y_train)
             y_pred = rf.predict(X_val)
