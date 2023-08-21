@@ -9,9 +9,11 @@ This repository contains the code and resources for an end-to-end Housing Price 
 - [Technologies Used](#technologies-used)
 - [Project Structure](#project-structure)
 - [Getting Started](#getting-started)
-- [Data](#data)
+- [Problem Description](#problem-description)
+- [Dataset Description](#dataset-description)
 - [Modeling](#modeling)
 - [MLOps Pipeline](#mlops-pipeline)
+- [Workflow Orchestration](#workflow-orchestration)
 - [Monitoring and Visualization](#monitoring-and-visualization)
 - [Contributing](#contributing)
 - [License](#license)
@@ -80,13 +82,25 @@ The project has been structured with the following folders and files:
 2. Set up your environment and install dependencies: `pip install -r requirements.txt`
 3. Follow instructions in relevant sections below to run preprocessing, training, and deployment.
 
-## Data
+## Problem Description
 
-The dataset used for this project is located in the `data/` directory. It contains historical housing price data along with various features. Preprocessing scripts in the `src/preprocessing/` directory transform the raw data into a suitable format for model training.
+The goal of this project is to develop a machine learning model that can accurately predict housing prices in Nigeria for various types of houses across all 36 states. The model aims to take into account features such as the type of house, location, bedroom size, bathroom size, parking space size, and other relevant factors to make accurate predictions. This predictive model can be a valuable tool for real estate professionals, homeowners, and potential buyers to estimate property values.
+
+## Dataset Description
+
+The dataset used for this project is a Nigeria House Price Dataset that covers all 36 states of the country. It is located in the `data/` directory. It contains the following columns:
+
+- **ID**: A unique identifier for each property.
+- **Type of House**: The type of the house, such as apartment, duplex, bungalow, etc.
+- **Location**: The location of the property within a specific state.
+- **Bedroom Size**: The number of bedrooms in the house.
+- **Bathroom Size**: The number of bathrooms in the house.
+- **Parking Space Size**: The size of the parking space available.
+- **Price**: The target variable, representing the price of the property.
 
 ## Modeling
 
-The model training process is defined in the `src/training/` directory. It involves loading the preprocessed data, splitting it into training and validation sets, and training a machine learning model. The trained model is saved in the `models/` directory.
+The model training process is defined in the `model_train.py` file. It involves loading the preprocessed data, splitting it into training and validation sets, training a machine learning model and saving the model to model registry. The trained model is saved in the `models/` directory.
 
 ## MLOps Pipeline
 
@@ -97,13 +111,39 @@ The model training process is defined in the `src/training/` directory. It invol
 5. Continuous Deployment (CD) using GitHub Actions to deploy the model in a containerized environment.
 6. Workflow orchestration using Prefect to schedule and manage the entire pipeline.
 
+## Workflow Orchestration
+
+The Workflow Orchestration phase of this project involves managing and automating the various steps of the machine learning pipeline using Prefect Cloud. It ensures that data preprocessing, model training, and deployment occur seamlessly and efficiently. The [Prefect](https://www.prefect.io/) workflow orchestration tool is utilized to schedule, coordinate, and monitor these tasks.
+
+visit [Prefect Cloud]("https://www.youtube.com/watch?v=y89Ww85EUdo&list=PL3MmuxUbc_hIUISrluw_A7wDSmfOhErJK") to setup prefect cloud.
+
+### Prefect Deployment
+
+    ```
+    prefect deployment build main.py:main_run \
+      -n "main_pipeline" \
+      -o "main_pipeline" \
+      --apply
+    ```
+
+![show](images/deployment.jpg)
+
+
 ## Monitoring and Visualization
 
 Grafana is used to monitor various metrics and insights related to the model's performance, data quality, and more. It provides real-time visualization of key performance indicators and helps in identifying anomalies and trends.
 
+![show](images/monitoring.jpg)
+
 ## Contributing
 
 Contributions are welcome! If you would like to contribute to the project, please follow the standard GitHub workflow: fork the repository, create a feature branch, make your changes, and submit a pull request.
+
+[![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)](https://github.com/gbotemiB)
+[![Twitter](https://img.shields.io/badge/Twitter-%231DA1F2.svg?style=for-the-badge&logo=Twitter&logoColor=white)](https://twitter.com/_oluwagbotty)
+[![LinkedIn](https://img.shields.io/badge/linkedin-%230077B5.svg?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/emmanuel-bolarinwa/)
+[![Gmail](https://img.shields.io/badge/Gmail-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:gbotemibolarinwa@gmail.com)
+
 
 ## License
 
