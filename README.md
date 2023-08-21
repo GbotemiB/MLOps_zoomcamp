@@ -126,14 +126,14 @@ visit [Prefect Cloud]("https://www.youtube.com/watch?v=y89Ww85EUdo&list=PL3MmuxU
       --apply
     ```
 
-![show](images/deployment.jpg)
+![show](images/deployment.png)
 
 
 ## Monitoring and Visualization
 
 Grafana is used to monitor various metrics and insights related to the model's performance, data quality, and more. It provides real-time visualization of key performance indicators and helps in identifying anomalies and trends.
 
-![show](images/monitoring.jpg)
+![show](images/monitoring.png)
 
 ## Contributing
 
