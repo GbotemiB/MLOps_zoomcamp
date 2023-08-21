@@ -18,7 +18,8 @@ disable = [
     "singleton-comparison",
     "missing-timeout",
     "not-context-manager",
-    "duplicate-code"
+    "duplicate-code",
+    "import-error"
     ]
 
 
